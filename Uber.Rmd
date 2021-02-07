@@ -33,7 +33,7 @@ library(gridExtra)
 #####Read Twitter Data
 # Set directory and read data
 setwd("D:/GLIM/BOOTCAMP")
-tweets.df <- read.csv("mytweets_anmol1.csv")
+tweets.df <- read.csv("mytweets_Uber.csv")
 
 # Convert char date to correct date format
 tweets.df$created <- as.Date(tweets.df$created, format= "%m/%d/%y")
