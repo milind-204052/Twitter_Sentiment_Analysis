@@ -1,0 +1,335 @@
+---
+title: "Uber"
+author: "Group 6"
+date: "March 16, 2020"
+output: html_document
+---
+
+
+```{r ,c1}
+
+#Setup the environment
+
+rm(list=ls())
+library(SnowballC)
+library(tm)
+library(ggplot2)
+library(RColorBrewer)
+library(wordcloud)
+library(topicmodels)
+library(data.table)
+library(stringi)
+library(lubridate)
+library(syuzhet)
+library(dplyr)
+library(plyr)
+library(grid)
+library(gridExtra)
+
+```
+
+
+```{r ,c2}
+#####Read Twitter Data
+# Set directory and read data
+setwd("D:/GLIM/BOOTCAMP")
+tweets.df <- read.csv("mytweets_anmol1.csv")
+
+# Convert char date to correct date format
+tweets.df$created <- as.Date(tweets.df$created, format= "%m/%d/%y")
+tweets.df$text <- as.character(tweets.df$text)
+str(tweets.df)
+
+```
+
+```{r ,c3}
+#####Build a Corpus, and specify the location to be the character Vectors  
+
+# Create document corpus with tweet text
+myCorpus<- Corpus(VectorSource(tweets.df$text)) 
+
+```
+
+```{r ,c4}
+#####convert to Lowercase  
+myCorpus <- tm_map(myCorpus, content_transformer(stri_trans_tolower))
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+```
+
+
+
+```{r ,c5}
+#####Remove the links (URLs)  
+removeURL <- function(x) gsub("http[^[:space:]]*", "", x)  
+myCorpus <- tm_map(myCorpus, content_transformer(removeURL))
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+
+```
+
+```{r ,c6}
+#####Remove the @ (usernames)
+removeUsername <- function(x) gsub("@[^[:space:]]*", "", x)  
+myCorpus <- tm_map(myCorpus, content_transformer(removeUsername))
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+
+```
+
+```{r ,c7}
+#####Remove anything except the english language and space  
+removeNumPunct <- function(x) gsub("[^[:alpha:][:space:]]*", "", x)   
+myCorpus <- tm_map(myCorpus, content_transformer(removeNumPunct))
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+
+```
+
+```{r ,c8}
+#####Remove Stopwords 
+myStopWords<- c((stopwords('english')),c( "Uber","uber", "de", "tu", "lyft", "take", "cuenta", "quedownload", "ufaufa", "su", "dale", "trabajo", "please", "amigos","ufuber","lleguen","desonto","como", "dont" ,"cabify", "ganhe","pop", "espa", "first",  "foto", "use" , "uuu" , "conta", "didi", "dans", "ubica", "em", "uuuuduu" , "todos", "monitoreando", "dog", "ufufe", "uuuuuu" , "udeuuuufubuauaueuu", "corn","libertyautosa","gratuito", "ubervaledesconto", "te" , "cloth" , "driving","airbnb", "manual", "furys", "fiesta" , "uauucuuuuueubuub", "km", "sx", "now","blind", "pour" , "via" , "ufufe", "seguros", "house", "sin", "gustaria", "dale", "just","ueubufcucuuffuuuuber","uecaueueueufucufuucuucaueuaeatspyvev","eats","ueududeuceuuc","im","rt","los","nueva","para","ubereng","muitos","uufubuauaueuu","ufuf","toyota","ufuf","por","na","uu","uffe","pe","vtc","u","sua","gig","las","covidufc","les","del","el","can","ube","people","dm","uaufcudufcuaufcuc", "eatsmhhtgue","e","la","ufe","amp","al","en","uf","le","si", "uuuu", "un", "es", "viaje","lyftuf","ufa","uba", "taxiuaufcudufcubfuafubufcuduecbuafufcudduf", "ubertaxi", "uduecbubufcucufxu", "uduedueufcubueufubufcuc", "uduedueufcubueufubufcucububuubueueauuuuufuuuu", "uufduuubu", "uuuuueuuueueca","veracidad","aarontue","us","vs","ia","ne","despidien","código", "recuerdas","gratis", "esta","codigo", "creditos","dinheiro", "covid", "con" , "sur", "votre", "première", "commande", "avec", "profitezen", "uaufef","quieres","censura","que","mi","cómodos","conductores", "uafufcudduf", "uberu", "eatspmsfj", "ucubfucuefudubereatsueuuuauduedueubufcucuuu", "uffufuauuud","kiedy","casa", "accès", "actualité", "florent", "larrêt", "lavocat", "libre", "linterview","udeuu", "gigeconomy", "ubereatsuduue", "pas", "udbufubufcuc", "udbufubufcucucrvggeuduuub", "uuucufuucueu" , "uua" ,"makinen", "pracowac", "tommi","rancisco", "san", "acuerdo", "autorizado", "uaufcudufcubfuafubufc","kapten", "ubered", "estamos","viajes",                "usa" , "y", "ho" , "cupom", "se","ya","bqp","xa","ahmed", "miguelt"," eatsbcysg", "veut", "liamgl","udude", "ueatscegbgbu", "ueatsuyfaaru", "eatshymzg", "ubereatsufd", "desconto", "vc", "corrida", "idlq", "mxplcv", "yvveyu", "zaczyna","funnyaf" ,"uubueufubbucucuufufuf", "uubereatsuubuuf", "taxifybolt","uceuubuubuuduedueufcubueufubufcucuuubuubuu", "uduuubuueubuceuubuuubufcucuubuubuuuuuuuuu", "ma", "gt", "manera", "uueubufcucuuffuuuber", "w","ppl", "uduedueufcubueuf","uoffueuduedueufcubueufubufcucubuauaueu", "womans", "aur", "kahi","orlando", "boston"  ))
+myCorpus<- tm_map(myCorpus,removeWords , myStopWords) 
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+
+```
+
+```{r ,c9}
+#####Remove Single letter words  
+removeSingle <- function(x) gsub(" . ", " ", x)   
+myCorpus <- tm_map(myCorpus, content_transformer(removeSingle))
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+```
+
+```{r ,c10}
+#####Remove Extra Whitespaces  
+myCorpus<- tm_map(myCorpus, stripWhitespace)
+writeLines(strwrap(myCorpus[[27]]$content,60))
+
+```
+
+```{r ,c11}
+#####keep a copy of "myCorpus" for stem completion later 
+myCorpusCopy<- myCorpus
+
+```
+
+```{r ,c12}
+#####Creating a term document matrix
+#myCorpus <- Corpus(VectorSource(myCorpus))
+tdm<- TermDocumentMatrix(myCorpus, control= list(wordLengths= c(1, Inf)))
+tdm
+
+```
+
+
+```{r ,c13}
+#####Find the terms used most frequently
+(freq.terms <- findFreqTerms(tdm, lowfreq = 25))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq > 25)
+df <- data.frame(term = names(term.freq), freq= term.freq)
+
+
+```
+
+
+```{r ,c14}
+#####Frequency analysis
+(freq.terms <- findFreqTerms(tdm, lowfreq = 10))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq > 10)
+df1 <- data.frame(term = names(term.freq), freq= term.freq)
+
+(freq.terms <- findFreqTerms(tdm, lowfreq = 55))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq > 55)
+df2 <- data.frame(term = names(term.freq), freq= term.freq)
+
+(freq.terms <- findFreqTerms(tdm, lowfreq = 85))
+term.freq <- rowSums(as.matrix(tdm))
+term.freq <- subset(term.freq, term.freq > 85)
+df3 <- data.frame(term = names(term.freq), freq= term.freq)
+
+
+```
+
+
+```{r ,c15}
+#####plotting the graph of frequent terms
+p1=ggplot(df1, aes(reorder(term, freq),freq)) + theme_bw() + geom_bar(stat = "identity")  + coord_flip() +labs(list(title="@10", x="Terms", y="Term Counts")) + theme(axis.text.y = element_text(size=7))
+
+
+p2=ggplot(df, aes(reorder(term, freq),freq)) + theme_bw() + geom_bar(stat = "identity")  + coord_flip() +labs(list(title="@25", x="Terms", y="Term Counts"))+
+  theme(axis.text.y = element_text(size=7))
+
+
+p3=ggplot(df2, aes(reorder(term, freq),freq)) + theme_bw() + geom_bar(stat = "identity")  + coord_flip() +labs(list(title="@55", x="Terms", y="Term Counts"))
+
+p4=ggplot(df3, aes(reorder(term, freq),freq)) + theme_bw() + geom_bar(stat = "identity")  + coord_flip() +labs(list(title="@85", x="Terms", y="Term Counts"))
+
+
+```
+
+```{r ,c16}
+#####plotting the graph of frequent terms
+grid.arrange(p1,p2,ncol=2)
+
+
+```
+
+
+
+```{r ,c17}
+grid.arrange(p3,p4,ncol=2)
+
+
+```
+
+```{r ,c18}
+#####calculate the frequency of words and sort it by frequency and setting up the Wordcloud
+
+word.freq <-sort(rowSums(as.matrix(tdm)), decreasing= F)
+pal<- brewer.pal(8, "Dark2")
+wordcloud(words = names(word.freq), freq = word.freq, min.freq = 2, random.order = F, colors = pal, max.words = 90)
+
+
+```
+
+```{r ,c19}
+##### Find association with a specific keyword in the tweets - order, code
+list1<- findAssocs(tdm, "ubereats", 0.2)
+corrdf1 <- t(data.frame(t(sapply(list1,c))))
+corrdf1
+
+barplot(t(as.matrix(corrdf1)), beside=TRUE,xlab = "Words",ylab = "Corr",col = "blue",main = "ubereats",border = "black")
+
+```
+
+```{r ,c20}
+##### Find association with a specific keyword in the tweets - pay, sick, cloud
+list1<- findAssocs(tdm, "drivers", 0.2)
+corrdf1 <- t(data.frame(t(sapply(list1,c))))
+corrdf1
+
+barplot(t(as.matrix(corrdf1)), beside=TRUE,xlab = "Words",ylab = "Corr",col = "blue",main = "drivers",border = "black")
+
+```
+
+```{r ,c21}
+##### Find association with a specific keyword in the tweets - get, promo, invite
+list1<- findAssocs(tdm, "code", 0.2)
+corrdf1 <- t(data.frame(t(sapply(list1,c))))
+corrdf1
+
+barplot(t(as.matrix(corrdf1)), beside=TRUE,xlab = "Words",ylab = "Corr",col = "blue",main = "code",border = "black")
+
+```
+
+```{r ,c22}
+##### Find association with a specific keyword in the tweets - healthcare, outbreak
+list1<- findAssocs(tdm, "coronavirus", 0.2)
+corrdf1 <- t(data.frame(t(sapply(list1,c))))
+corrdf1
+
+barplot(t(as.matrix(corrdf1)), beside=TRUE,xlab = "Words",ylab = "Corr",col = "blue",main = "coronavirus",border = "black")
+
+```
+
+```{r ,c23}
+##### Find association with a specific keyword in the tweets - ride, invite, code, app
+list1<- findAssocs(tdm, "free", 0.2)
+corrdf1 <- t(data.frame(t(sapply(list1,c))))
+corrdf1
+
+barplot(t(as.matrix(corrdf1)), beside=TRUE,xlab = "Words",ylab = "Corr",col = "blue",main = "free",border = "black")
+
+```
+
+
+```{r ,c24}
+##### Topic Modelling to identify latent/hidden topics using LDA technique
+dtm <- as.DocumentTermMatrix(tdm)
+
+rowTotals <- apply(dtm , 1, sum)
+
+NullDocs <- dtm[rowTotals==0, ]
+dtm   <- dtm[rowTotals> 0, ]
+
+if (length(NullDocs$dimnames$Docs) > 0) {
+tweets.df <- tweets.df[-as.numeric(NullDocs$dimnames$Docs),]
+}
+
+lda <- LDA(dtm, k = 10) # find 10 topic
+term <- terms(lda, 10) # first 10 terms of every topic
+(term <- apply(term, MARGIN = 2, paste, collapse = ", "))
+
+```
+
+```{r ,c25}
+##### Topic Modelling to identify latent/hidden topics using LDA technique
+
+topics<- topics(lda)
+topics<- data.frame(date=(tweets.df$created), topic = topics)
+qplot (date, ..count.., data=topics, geom ="density", fill= term[topic], position="stack")
+```
+
+```{r ,c26}
+#####Sentiment Analysis: understanding emotional valence in tweets using syuzhet
+mysentiment<-get_nrc_sentiment((tweets.df$text))
+
+# Get the sentiment score for each emotion
+mysentiment.positive =sum(mysentiment$positive)
+mysentiment.anger =sum(mysentiment$anger)
+mysentiment.anticipation =sum(mysentiment$anticipation)
+mysentiment.disgust =sum(mysentiment$disgust)
+mysentiment.fear =sum(mysentiment$fear)
+mysentiment.joy =sum(mysentiment$joy)
+mysentiment.sadness =sum(mysentiment$sadness)
+mysentiment.surprise =sum(mysentiment$surprise)
+mysentiment.trust =sum(mysentiment$trust)
+mysentiment.negative =sum(mysentiment$negative)
+
+# Create the bar chart
+yAxis <- c(mysentiment.positive,
+           + mysentiment.anger,
+           + mysentiment.anticipation,
+           + mysentiment.disgust,
+           + mysentiment.fear,
+           + mysentiment.joy,
+           + mysentiment.sadness,
+           + mysentiment.surprise,
+           + mysentiment.trust,
+           + mysentiment.negative)
+
+xAxis <- c("Positive","Anger","Anticipation","Disgust","Fear","Joy","Sadness",
+           "Surprise","Trust","Negative")
+colors <- c("green","red","blue","orange","red","green","orange","blue","green","red")
+yRange <- range(0,yAxis)
+barplot(yAxis, names.arg = xAxis, 
+        xlab = "Emotional valence", ylab = "Score", main = "Twitter sentiment", 
+        sub = "US Open", col = colors, border = "black", xpd = F, ylim = yRange,
+        axisnames = T, cex.axis = 0.8, cex.sub = 0.8, col.sub = "blue")
+
+```
+```{r ,c27}
+#####Sentiment Analysis : Plot by date - understanding cummulative sentiment score movement 
+mysentimentvalues <- data.frame(get_sentiment((tweets.df$text)))
+colnames(mysentimentvalues)<-"polarity"
+mysentimentvalues$date <- tweets.df$created
+
+result <- aggregate(polarity ~ date, data = mysentimentvalues, sum)
+result
+plot(result, type = "l")
+
+```
+
+```{r ,c28}
+#####Sentiment Analysis: Plot by date - understanding average sentiment score movement 
+result1 <- aggregate(polarity ~ date, data = mysentimentvalues, mean)
+result1
+plot(result1, type = "l")
+
+```
