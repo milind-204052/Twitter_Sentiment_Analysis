@@ -1,6 +1,5 @@
 ---
 title: "Uber"
-author: "Group 6"
 date: "March 16, 2020"
 output: html_document
 ---
