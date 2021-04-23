@@ -1,0 +1,15 @@
+library(twitteR)
+
+## These data can be collected through twitter developer account
+api_key='___________________________________'
+api_secret='_________________________________________________'
+access_token='______________________________________________-'
+access_token_secret='_______________________________________________'
+setup_twitter_oauth(api_key,api_secret,access_token,access_token_secret)
+
+# to select twitter handle for downloading tweets 
+# such as 18000 tweets in eng language for #github
+tweets= searchTwitter('#github',n=18000,lang = 'en')
+tweets
+tweetsdf=twListToDF(tweets)
+write.csv(tweetsdf, file = 'github_18k.csv')
